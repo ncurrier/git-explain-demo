@@ -2,6 +2,7 @@ export type Order = {
   id: string;
   status: 'pending' | 'paid' | 'failed';
   attempts: number;
+  idempotencyKey?: string;
 };
 
 export function initializeOrder(id: string): Order {
@@ -21,15 +22,24 @@ function retryDelayMs(attempt: number): number {
   return 200 * Math.pow(2, capped);
 }
 
+function ensureIdempotencyKey(order: Order): Order {
+  if (order.idempotencyKey) {
+    return order;
+  }
+
+  // Keep retries safe when payment provider receives duplicate submissions.
+  return { ...order, idempotencyKey: `order-${order.id}` };
+}
+
 export async function retryCharge(
   order: Order,
-  performCharge: () => Promise<void>
+  performCharge: (idempotencyKey: string) => Promise<void>
 ): Promise<Order> {
-  let current = order;
+  let current = ensureIdempotencyKey(order);
 
   for (let attempt = 0; attempt < 6; attempt += 1) {
     try {
-      await performCharge();
+      await performCharge(current.idempotencyKey!);
       return markPaid({ ...current, attempts: attempt + 1 });
     } catch {
       await new Promise((resolve) => setTimeout(resolve, retryDelayMs(attempt)));

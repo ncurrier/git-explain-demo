@@ -26,3 +26,10 @@ Optional line target:
 - Right: likely intent reconstruction from bounded local context
 
 No cloud APIs and no external issue tracker data are used.
+
+
+## Test
+
+```bash
+./scripts/test.sh
+```

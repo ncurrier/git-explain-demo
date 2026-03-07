@@ -22,5 +22,7 @@ assert_contains "== Raw git blame =="
 assert_contains "fix\(retry\): enforce idempotency key before reattempting charges"
 assert_contains "=== Why This Exists \(likely\) ==="
 assert_contains "idempotency"
+assert_contains "commit: e0d8e71d30edab777f15fa19ba242c8dc449d25e"
+assert_contains "line: 31"
 
 echo "[git-explain-demo:test] pass"
